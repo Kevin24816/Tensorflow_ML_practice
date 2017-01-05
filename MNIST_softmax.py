@@ -23,7 +23,7 @@ def train():
     y = tf.matmul(x, W) + b
 
     # holds the final y-matrix value after softmax activation
-    y_ = tf.placeholder(tf.float32, [None, 10], name="y")
+    y_ = tf.placeholder(tf.float32, [None, 10], name="y_")
 
     ###############DEFINING_OPTIMIZATION###########################
     # training step using gradient descent optimizer with learning rate 0.5 minimizing loss calculated by cross entropy
@@ -43,7 +43,7 @@ def train():
         # getting random batches (size bs) of x (images) and y (labels)
         batch_x, batch_y = mnist.train.next_batch(bs)
         # feeding the batches into the session
-        s.run(tstep, feed_dict= {x: batch_x, y: batch_y})
+        s.run(tstep, feed_dict= {x: batch_x, y_: batch_y})
 
      # compares the predicted value to actual value and returns array of booleans on whether the prediction was true
     compare_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
