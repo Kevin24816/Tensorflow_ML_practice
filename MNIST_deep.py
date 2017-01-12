@@ -2,6 +2,8 @@ import tensorflow as tf
 import pickle
 from tensorflow.examples.tutorials.mnist import input_data
 
+# deep learning network on flattened image that generates average of 98% accuracy
+
 # saving/loading mnist data
 def getMNIST():
     try:
@@ -14,17 +16,12 @@ def getMNIST():
 
 mnist = getMNIST()
 
-# dropout: https://github.com/aymericdamien/TensorFlow-Examples/blob/master/examples/3_NeuralNetworks/convolutional_network.py
-# how to get rid of dropout after training
-
-# decaying learning rate: https://www.tensorflow.org/api_docs/python/train/decaying_the_learning_rate
-
-
-def five_layer_network(x, dropout):
+def five_layer_network(x):
     print "training 5 layer deep neural network"
 
     a, b, c, d = 400, 200, 100, 50
 
+    # truncated_normal initializes the weights as small random values with standard deviation of 0.1
     w1 = tf.Variable(tf.truncated_normal([784, a], stddev=0.1),  name="w1")
     b1 = tf.Variable(tf.zeros([a]), name="b1")
     y1 = tf.nn.relu(tf.matmul(x, w1) + b1, name="y1")
@@ -45,10 +42,7 @@ def five_layer_network(x, dropout):
     b5 = tf.Variable(tf.zeros([10]), name="b5")
     y = tf.matmul(y4, w5) + b5
 
-    # applying dropout
-    y_drop = tf.nn.dropout(y, dropout)
-
-    return y_drop
+    return y
 
 
 def train():
@@ -59,12 +53,14 @@ def train():
 
     x = tf.placeholder(tf.float32, [None, 784], name="x")
 
-    y = five_layer_network(x, p_keep)
+    y = five_layer_network(x)
+
+    y_drop = tf.nn.dropout(y, p_keep)
 
     correct_labels = tf.placeholder(tf.float32, [None, 10], name="correct_labels")
 
     # cost function
-    cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y, correct_labels))
+    cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y_drop, correct_labels))
 
     # applying learning rate decay MAYBE TRY ADAM OPTIMIZER?
     decay_steps = 1000
@@ -86,7 +82,7 @@ def train():
         sess.run(init)
 
         # for evaluating accuracy on test data
-        correct = tf.equal(tf.argmax(y, 1), tf.argmax(correct_labels, 1))
+        correct = tf.equal(tf.argmax(y_drop, 1), tf.argmax(correct_labels, 1))
         accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
 
         for epoch in range(num_epochs):
